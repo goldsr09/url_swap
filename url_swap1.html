@@ -164,6 +164,10 @@
   <!-- 5) Container for side-by-side tables (comparison + your macro lookup) -->
   <div id="tablesContainer">
     <div id="comparisonTableContainer"></div>
+    <div>
+      <label for="macroSearchInput">Search Macros:</label>
+      <input type="text" id="macroSearchInput" placeholder="Search Macros" />
+    </div>
 
     <div id="lookupTableContainer">
       <h3>Macro Configuration for Inventory System Tags</h3>
@@ -827,6 +831,47 @@
   
       // 5) re-populate the dropdown with remaining keys
       populateKeysDropdown(currentParams);
+    });
+    /***********************************************
+     * SEARCH MACROS IN LOOKUP TABLE
+     ***********************************************/
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('macroSearchInput');
+      const rows = Array.from(document.querySelectorAll('#lookupTableContainer tbody tr'));
+
+      rows.forEach(row => {
+        row.querySelectorAll('td').forEach(cell => {
+          cell.dataset.original = cell.textContent;
+        });
+      });
+
+      function escapeRegExp(str) {
+        return str.replace(/[.*+?^${}()|[\]\]/g, '\$&');
+      }
+
+      function filterRows() {
+        const query = searchInput.value.trim();
+        const lower = query.toLowerCase();
+        const regex = new RegExp(escapeRegExp(query), 'ig');
+        rows.forEach(row => {
+          const cells = Array.from(row.querySelectorAll('td'));
+          const text = cells.map(c => c.dataset.original.toLowerCase()).join(' ');
+          if (!query || text.includes(lower)) {
+            row.style.display = '';
+            cells.forEach(c => {
+              let txt = c.dataset.original;
+              if (query) {
+                txt = txt.replace(regex, '<mark>$&</mark>');
+              }
+              c.innerHTML = txt;
+            });
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      }
+
+      searchInput.addEventListener('input', filterRows);
     });
   </script>
 </body>
