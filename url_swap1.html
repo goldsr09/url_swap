@@ -584,6 +584,10 @@
         default:            return null;
       }
     }
+
+    function isPlaceholderValue(val) {
+      return (/^\{[^{}]+\}$/).test(val) || (/^\[[^\[\]]+\]$/).test(val);
+    }
   
     /***********************************************
      * 3) APPLY TABLE ROW REPLACEMENTS (macros)
@@ -612,8 +616,8 @@
           if (lowerKey in lowerCaseKeyMap) {
             const actualKey = lowerCaseKeyMap[lowerKey];
             const existingValue = currentParams[actualKey] || '';
-            // Replace only if it's obviously a placeholder (contains { } or [ ])
-            if (existingValue.includes('{') || existingValue.includes('[')) {
+            // Replace only if the current value is an actual placeholder
+            if (isPlaceholderValue(existingValue)) {
               currentParams[actualKey] = row.macro;
             }
           } else {
