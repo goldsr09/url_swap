@@ -493,8 +493,10 @@
           </tr>
         </tbody>
       </table>
-    </div>
   </div>
+  </div>
+
+  <button id="downloadCsvBtn">Download CSV</button>
 
   <!-- (6) Second Step: Remove Keys from the Transformed URL -->
   <div id="removeKeysSection">
@@ -827,6 +829,45 @@
   
       // 5) re-populate the dropdown with remaining keys
       populateKeysDropdown(currentParams);
+    });
+
+    /***********************************************
+     * 11) DOWNLOAD COMPARISON TABLE AS CSV
+     ***********************************************/
+    const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+    downloadCsvBtn.addEventListener('click', function () {
+      const rows = document.querySelectorAll(
+        '#comparisonTableContainer tbody tr'
+      );
+      if (rows.length === 0) {
+        alert('Please transform a URL first.');
+        return;
+      }
+
+      function csvEscape(val) {
+        if (val == null) return '';
+        return '"' + String(val).replace(/"/g, '""') + '"';
+      }
+
+      let csv = 'Param Key,Before,After\n';
+      rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const key = cells[0].textContent.trim();
+        const before = cells[1].textContent.trim();
+        const input = cells[2].querySelector('input');
+        const after = input ? input.value.trim() : cells[2].textContent.trim();
+        csv += `${csvEscape(key)},${csvEscape(before)},${csvEscape(after)}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'comparison.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     });
   </script>
 </body>
